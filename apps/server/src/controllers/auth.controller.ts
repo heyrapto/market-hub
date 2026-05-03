@@ -69,19 +69,33 @@ export const login = async (req: express.Request, res: express.Response) => {
         .json({ message: "Password is incorrect", success: false });
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      env.JWT_SECRET,
+      env.JWT_ACCESS_SECRET,
+      { expiresIn: "1d" },
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      env.JWT_REFRESH_SECRET,
       { expiresIn: "1d" },
     );
 
     if (user) {
       const { password, ...userWithoutPassword } = user;
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       res.status(200).json({
         message: "Login Succesfull",
         success: true,
-        userWithoutPassword,
-        token,
+        user: userWithoutPassword,
+        accessToken,
       });
     }
   } catch (error: any) {
@@ -106,6 +120,12 @@ export const deleteUser = async (
     throw new AppError(error.message, 500);
   }
 };
+
+// refresh token
+export const refreshToken = async (
+  req: express.Request,
+  res: express.Response,
+) => {};
 
 // google auth
 export const authWithGoogle = async () => {

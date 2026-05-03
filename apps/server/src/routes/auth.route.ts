@@ -19,6 +19,7 @@ router.post("/login", login);
 router.delete("/delete/:id", deleteUser);
 
 // refresh token
+router.post("/refresh");
 
 // authenticate with google
 router.get("/google", authWithGoogle);
