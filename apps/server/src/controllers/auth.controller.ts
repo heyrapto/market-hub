@@ -1,15 +1,112 @@
 import passport from "passport";
 import { users } from "../config/db/schema";
 import express from "express";
+import { db } from "../config/db";
+import { eq } from "drizzle-orm";
+import { AppError } from "../utils/appError";
+import bcrypt from "bcrypt";
 
 // register user
-export const register = async (
-  req: express.Request,
-  res: express.Response,
-) => {};
+export const register = async (req: express.Request, res: express.Response) => {
+  const { firstName, lastName, email, password, role } = req.body;
+  try {
+    if (!firstName || !lastName || !password || !email) {
+      res.status(400).json({ message: "Required missing field" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+        password: hashedPassword,
+        email: email,
+      })
+      .returning({
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+        email: email,
+      });
+
+    res.status(201).json({
+      message: "User Created succesfully",
+      success: true,
+      data: newUser,
+    });
+  } catch (error: any) {
+    throw new AppError(error.message, 500);
+  }
+};
 
 // login user
-export const login = async (req: express.Request, res: express.Response) => {};
+export const login = async (req: express.Request, res: express.Response) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      res.status(400).json({ message: "Required missing field" });
+    }
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found", success: false });
+    }
+
+    const isMatch = bcrypt.compare(password, user.password as string);
+    if (!isMatch) {
+      res
+        .status(400)
+        .json({ message: "Password is incorrect", success: false });
+    }
+
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
+      res.status(200).json({
+        message: "Login Succesfull",
+        success: true,
+        userWithoutPassword,
+      });
+    }
+  } catch (error: any) {
+    throw new AppError(error.message, 500);
+  }
+};
+
+// delete user
+export const deleteUser = async (
+  req: express.Request,
+  res: express.Response,
+) => {
+  const { id } = req.body;
+
+  if (!id) {
+    res.status(404).json({ message: "User not found", success: false });
+  }
+
+  const [deletedUser] = await db
+    .delete(users)
+    .where(eq(users.id, id))
+    .returning({
+      id: users.id,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      email: users.email,
+    });
+
+  res.status(200).json({ message: "Deleted succesfully", deletedUser });
+  try {
+  } catch (error: any) {
+    throw new AppError(error.message, 500);
+  }
+};
 
 // google auth
 export const authWithGoogle = async () => {
