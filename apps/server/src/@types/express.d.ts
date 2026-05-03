@@ -1,4 +1,5 @@
 import { z } from "zod";
+import "express-session";
 import * as express from "express";
 
 export const TokenPayloadSchema = z.object({
@@ -13,5 +14,15 @@ declare global {
     interface Request {
       user?: TokenPayload;
     }
+  }
+}
+
+declare module "express-session" {
+  interface SessionData {
+    googleId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    user: TokenPayload;
   }
 }

@@ -21,11 +21,13 @@ export const orderStatusEnum = pgEnum("order_status", [
 // --- Users ---
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName").notNull(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
   role: roleEnum("role").default("buyer").notNull(),
-  stripeAccountId: text("stripe_account_id"),
+  password: text("password"),
+  paystackAccountId: text("stripe_account_id"),
+  googleId: text("google_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
