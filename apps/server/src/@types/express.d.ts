@@ -1,6 +1,7 @@
 import { z } from "zod";
 import "express-session";
 import * as express from "express";
+import { Session } from "express-session";
 
 export const TokenPayloadSchema = z.object({
   id: z.string(),
@@ -11,8 +12,10 @@ export type TokenPayload = z.infer<typeof TokenPayloadSchema>;
 
 declare global {
   namespace Express {
+    interface User extends TokenPayload {}
     interface Request {
       user?: TokenPayload;
+      session: Session & Partial<SessionData>;
     }
   }
 }

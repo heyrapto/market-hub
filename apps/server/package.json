@@ -4,7 +4,7 @@
   "main": "dist/main.js",
   "type": "commonjs",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/main.ts",
+    "dev": "nodemon --watch src --exec ts-node --files src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
     "db:generate": "drizzle-kit generate",

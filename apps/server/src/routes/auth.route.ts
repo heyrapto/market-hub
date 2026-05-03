@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   authWithGoogle,
+  deleteUser,
   googleCallback,
   login,
   register,
@@ -13,6 +14,11 @@ router.post("/register", register);
 
 // login user
 router.post("/login", login);
+
+// delete user
+router.delete("/delete/:id", deleteUser);
+
+// refresh token
 
 // authenticate with google
 router.get("/google", authWithGoogle);

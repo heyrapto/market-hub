@@ -3,8 +3,10 @@ import { users } from "../config/db/schema";
 import express from "express";
 import { db } from "../config/db";
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 import { AppError } from "../utils/appError";
 import bcrypt from "bcrypt";
+import { env } from "../config/env";
 
 // register user
 export const register = async (req: express.Request, res: express.Response) => {
@@ -67,12 +69,19 @@ export const login = async (req: express.Request, res: express.Response) => {
         .json({ message: "Password is incorrect", success: false });
     }
 
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      env.JWT_SECRET,
+      { expiresIn: "1d" },
+    );
+
     if (user) {
       const { password, ...userWithoutPassword } = user;
       res.status(200).json({
         message: "Login Succesfull",
         success: true,
         userWithoutPassword,
+        token,
       });
     }
   } catch (error: any) {
@@ -85,24 +94,14 @@ export const deleteUser = async (
   req: express.Request,
   res: express.Response,
 ) => {
-  const { id } = req.body;
-
-  if (!id) {
-    res.status(404).json({ message: "User not found", success: false });
-  }
-
-  const [deletedUser] = await db
-    .delete(users)
-    .where(eq(users.id, id))
-    .returning({
-      id: users.id,
-      firstName: users.firstName,
-      lastName: users.lastName,
-      email: users.email,
-    });
-
-  res.status(200).json({ message: "Deleted succesfully", deletedUser });
+  const { id } = req.params;
   try {
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+    await db.delete(users).where(eq(users.id, id));
+
+    res.status(200).json({ message: `User deleted succesfully` });
   } catch (error: any) {
     throw new AppError(error.message, 500);
   }
