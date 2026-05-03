@@ -1,10 +1,24 @@
 import express from "express";
 import AppRoutes from "./routes/index";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { errorHandler } from "./middleware/error.middleware";
+import { apiLimiter } from "./middleware/rate-limit.middleware";
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+app.use(cookieParser());
+app.use(apiLimiter);
 
-app.use("/api/v1/", AppRoutes);
+const corsOptions = {
+  origin: ["http://localhost:9000"],
+  optionsSuccessStatus: 200,
+};
+
+app.use("/api/v1/", cors(corsOptions), AppRoutes);
+
+app.use(errorHandler);
 
 export default app;
