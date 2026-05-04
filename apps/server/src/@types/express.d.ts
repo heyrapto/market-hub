@@ -6,6 +6,9 @@ import { Session } from "express-session";
 export const TokenPayloadSchema = z.object({
   id: z.string(),
   role: z.enum(["admin", "buyer", "seller"]),
+  email: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
 });
 
 export type TokenPayload = z.infer<typeof TokenPayloadSchema>;

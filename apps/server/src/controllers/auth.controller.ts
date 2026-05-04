@@ -88,7 +88,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
       });
 
       res.status(200).json({
@@ -125,7 +125,32 @@ export const deleteUser = async (
 export const refreshToken = async (
   req: express.Request,
   res: express.Response,
-) => {};
+) => {
+  try {
+    if (req.user?.role) {
+      const newRefreshToken = jwt.sign(
+        { id: req.user.id, role: req.user.role },
+        env.JWT_REFRESH_SECRET,
+        { expiresIn: "15d" },
+      );
+
+      res.status(201).send({
+        success: true,
+        message: "Refresh token created.",
+        refreshToken: newRefreshToken,
+        user: {
+          id: req.user.id,
+          firstName: req.user.firstName,
+          lastName: req.user.firstName,
+          email: req.user.email,
+          role: req.user.role,
+        },
+      });
+    }
+  } catch (error: any) {
+    throw new AppError(error.message, 500);
+  }
+};
 
 // google auth
 export const authWithGoogle = async () => {
