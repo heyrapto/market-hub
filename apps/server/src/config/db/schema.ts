@@ -7,8 +7,8 @@ import {
   timestamp,
   pgEnum,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
-// --- Enums ---
 export const roleEnum = pgEnum("role", ["buyer", "seller", "admin"]);
 export const orderStatusEnum = pgEnum("order_status", [
   "pending",
@@ -18,7 +18,6 @@ export const orderStatusEnum = pgEnum("order_status", [
   "cancelled",
 ]);
 
-// --- Users ---
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   firstName: text("firstName").notNull(),
@@ -32,13 +31,12 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// --- Products ---
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  imageUrl: text("image_url"),
+  imageUrl: text("image_url").notNull(),
   stock: integer("stock").default(0).notNull(),
   sellerId: uuid("seller_id")
     .notNull()
@@ -47,7 +45,16 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// --- Orders ---
+export const reviews = pgTable("reviews", {
+  id: uuid("id").primaryKey(),
+  productId: integer("product_id")
+    .notNull()
+    .references(() => products.id),
+  rating: integer("rating").notNull(), // e.g., 1-5
+  content: text("content"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
   buyerId: uuid("buyer_id")
@@ -59,7 +66,6 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// --- Order Items ---
 export const orderItems = pgTable("order_items", {
   id: uuid("id").primaryKey().defaultRandom(),
   orderId: uuid("order_id")
@@ -72,7 +78,6 @@ export const orderItems = pgTable("order_items", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
 });
 
-// --- Refresh Tokens ---
 export const refreshTokens = pgTable("refresh_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
@@ -82,3 +87,14 @@ export const refreshTokens = pgTable("refresh_tokens", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const productsRelations = relations(products, ({ many }) => ({
+  reviews: many(reviews),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, {
+    fields: [reviews.productId],
+    references: [products.id],
+  }),
+}));
