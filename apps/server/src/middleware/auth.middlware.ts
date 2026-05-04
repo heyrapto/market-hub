@@ -21,6 +21,7 @@ export const authMiddleware = async (
     next();
   } catch (error) {
     res.status(403).json({ message: "Expired or invalid" });
+    // if access token is expired, frontend detects that then sends a request to the refresh endpoint for a refresh token
     throw new AppError("Expired or invalid", 403);
   }
 };
