@@ -50,6 +50,9 @@ export const reviews = pgTable("reviews", {
   productId: integer("product_id")
     .notNull()
     .references(() => products.id),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   rating: integer("rating").notNull(), // e.g., 1-5
   content: text("content"),
   createdAt: timestamp("created_at").defaultNow(),

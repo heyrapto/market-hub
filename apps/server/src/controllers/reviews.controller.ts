@@ -1,5 +1,5 @@
 import express from "express";
-import { products, reviews } from "../config/db/schema";
+import { products, reviews, users } from "../config/db/schema";
 import { AppError } from "../utils/appError";
 import { db } from "../config/db";
 import { eq } from "drizzle-orm";
@@ -17,11 +17,17 @@ export const reviewProduct = async (
         .json({ success: false, message: "Missing required field" });
     }
 
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     // update rating and content to user payload
-    // todo: keep track of the person who rate the product
     const result = await db
       .insert(reviews)
       .values({
+        userId: userId,
         productId: productId,
         rating,
         content,
@@ -44,8 +50,19 @@ export const getProductReviews = async (
       return res.status(400).json({ error: "Invalid ID format" });
     }
     const result = await db
-      .select()
+      .select({
+        id: reviews.id,
+        rating: reviews.rating,
+        content: reviews.content,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
       .from(reviews)
+      .leftJoin(users, eq(users.id, reviews.userId))
       .where(eq(reviews.productId, productId));
     res.status(200).json({
       success: true,
