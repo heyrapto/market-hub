@@ -27,12 +27,14 @@ export const createProduct = async (
   res: express.Response,
 ) => {
   try {
-    const { title, description, price, imageUrl, stock, sellerId } = req.body;
-    if (!title || description || price || imageUrl || stock) {
-      res
+    const { title, description, price, stock, sellerId } = req.body;
+    if (!title || !description || !price || !stock) {
+      return res
         .status(400)
         .json({ message: "Required missing fields", success: false });
     }
+
+    const imageUrl: string = `uploads/${req.file?.filename}`;
 
     const [newProduct] = await db
       .insert(products)
@@ -89,7 +91,7 @@ export const updateProduct = async (
 ) => {
   try {
     const { productId } = req.params;
-    const { title, description, price, imageUrl, stock } = req.body;
+    const { title, description, price, stock } = req.body;
     if (typeof productId !== "string") {
       return res.status(400).json({ error: "Invalid ID format" });
     }
@@ -104,6 +106,8 @@ export const updateProduct = async (
       res.status(404).json({ message: "Product not found", success: false });
       throw new AppError("Product not found", 404);
     }
+    // attach image from multer
+    const imageUrl: string = `uploads/${req.file?.filename}`;
     // update and send the updated product
     const updatedProduct = db
       .update(products)
