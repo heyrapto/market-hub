@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../utils/appError";
 import bcrypt from "bcrypt";
 import { env } from "../config/env";
+import { sendEmail } from "../services/email.service";
+import { sendLoginEmail } from "../templates/welcome.template";
 
 // register user
 export const register = async (req: express.Request, res: express.Response) => {
@@ -34,13 +36,20 @@ export const register = async (req: express.Request, res: express.Response) => {
         email: email,
       });
 
+    // send register email
+    await sendEmail(
+      newUser.email,
+      "Signup Successful",
+      sendLoginEmail(newUser),
+    );
+
     res.status(201).json({
       message: "User Created succesfully",
       success: true,
       data: newUser,
     });
-  } catch (error: any) {
-    throw new AppError(error.message, 500);
+  } catch (error) {
+    throw new AppError(`${(error as Error).message}}`, 500);
   }
 };
 
@@ -91,6 +100,17 @@ export const login = async (req: express.Request, res: express.Response) => {
         maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
       });
 
+      try {
+      } catch (error) {
+        throw new AppError(
+          `Failed to send welcome email: ${(error as Error).message}}`,
+          500,
+        );
+      }
+
+      // send login email
+      await sendEmail(user.email, "Login Successful", sendLoginEmail(user));
+
       res.status(200).json({
         message: "Login Succesfull",
         success: true,
@@ -98,8 +118,8 @@ export const login = async (req: express.Request, res: express.Response) => {
         accessToken,
       });
     }
-  } catch (error: any) {
-    throw new AppError(error.message, 500);
+  } catch (error) {
+    throw new AppError(`${(error as Error).message}}`, 500);
   }
 };
 
@@ -116,8 +136,8 @@ export const deleteUser = async (
     await db.delete(users).where(eq(users.id, id));
 
     res.status(200).json({ message: `User deleted succesfully` });
-  } catch (error: any) {
-    throw new AppError(error.message, 500);
+  } catch (error) {
+    throw new AppError(`${(error as Error).message}}`, 500);
   }
 };
 
@@ -147,8 +167,8 @@ export const refreshToken = async (
         },
       });
     }
-  } catch (error: any) {
-    throw new AppError(error.message, 500);
+  } catch (error) {
+    throw new AppError(`${(error as Error).message}}`, 500);
   }
 };
 

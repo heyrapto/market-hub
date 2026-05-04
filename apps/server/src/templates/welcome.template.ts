@@ -1,4 +1,4 @@
-export const sendLoginEmail = ({ name }: { name: string }) => {
+export const sendLoginEmail = ({ firstName }: { firstName: string }) => {
   return `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -20,7 +20,7 @@ export const sendLoginEmail = ({ name }: { name: string }) => {
 
             <tr>
               <td style="padding-bottom:12px;">
-                <h1 style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">Welcome back, ${{ name }} 👋</h1>
+                <h1 style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">Welcome back, ${{ firstName }} 👋</h1>
               </td>
             </tr>
 
@@ -48,7 +48,7 @@ export const sendLoginEmail = ({ name }: { name: string }) => {
   `;
 };
 
-export const sendRegisterEmail = ({ name }: { name: string }) => {
+export const sendRegisterEmail = ({ firstName }: { firstName: string }) => {
   return `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -70,7 +70,7 @@ export const sendRegisterEmail = ({ name }: { name: string }) => {
 
             <tr>
               <td style="padding-bottom:12px;">
-                <h1 style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">You're in, ${{ name }} ✨</h1>
+                <h1 style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">You're in, ${{ firstName }} ✨</h1>
               </td>
             </tr>
 

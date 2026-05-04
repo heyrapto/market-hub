@@ -1,5 +1,5 @@
 import passport from "passport";
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { users } from "./db/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
