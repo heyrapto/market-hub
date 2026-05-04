@@ -46,7 +46,7 @@ export const products = pgTable("products", {
 });
 
 export const reviews = pgTable("reviews", {
-  id: uuid("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   productId: integer("product_id")
     .notNull()
     .references(() => products.id),
