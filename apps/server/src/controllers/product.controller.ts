@@ -11,11 +11,23 @@ export const getAllProducts = async (
   res: express.Response,
 ) => {
   try {
-    const allProducts = await db.select().from(products);
+    const { limit = 10, page = 1 } = req.query;
+    const startIndex = (Number(page) - 1) * Number(limit);
+    const total = (await db.select().from(products)).length;
+    const allProducts = await db
+      .select()
+      .from(products)
+      .offset(startIndex)
+      .orderBy(products.id);
 
-    res
-      .status(200)
-      .json({ success: true, message: "Success", products: allProducts });
+    res.status(200).json({
+      success: true,
+      message: "Success",
+      products: allProducts,
+      page,
+      limit,
+      total,
+    });
   } catch (error) {
     throw new AppError(`${(error as Error).message}}`, 500);
   }
