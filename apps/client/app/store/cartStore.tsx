@@ -1,4 +1,4 @@
-import { cartApi } from "@/services/api";
+import { cartApi } from "@/app/services/api";
 import { Product } from "@market-hub/shared-types";
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";

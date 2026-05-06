@@ -1,4 +1,4 @@
-import { reviewsApi } from "@/services/api";
+import { reviewsApi } from "@/app/services/api";
 import { Review } from "@market-hub/shared-types";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";

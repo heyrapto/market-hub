@@ -1,4 +1,4 @@
-import { apiClient } from "@/config/axios";
+import { apiClient } from "@/app/config/axios";
 
 export const productsApi = {
   allProducts: async () => {

@@ -1,4 +1,4 @@
-import { authApi } from "@/services/api";
+import { authApi } from "@/app/services/api";
 import { User } from "@market-hub/shared-types";
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";

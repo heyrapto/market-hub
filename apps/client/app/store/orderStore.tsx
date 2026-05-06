@@ -1,4 +1,4 @@
-import { ordersApi } from "@/services/api";
+import { ordersApi } from "@/app/services/api";
 import { Order, OrderItem } from "@market-hub/shared-types";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -29,7 +29,7 @@ export const useOrderStore = create<OrderState>()(
         const orderId = response.orderId;
         // The placeOrder API returns only orderId, we might need to fetch details separately
         // but for now let's just return a partial order or handle it in UI
-        const order = { id: orderId } as Order; 
+        const order = { id: orderId } as Order;
         set((state) => ({
           orders: [order, ...state.orders],
           loading: false,

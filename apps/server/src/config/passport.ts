@@ -19,8 +19,6 @@ passport.use(
       done: any,
     ) {
       try {
-        // 1. Insert or Update (Upsert)
-        // Note: .returning() is required to get the user object back
         const [user] = await db
           .insert(users)
           .values({
@@ -46,12 +44,12 @@ passport.use(
   ),
 );
 
-/* Store user ID in session */
+/* store user ID in session */
 passport.serializeUser(function (user: any, done) {
   done(null, user.id);
 });
 
-/* Retrieve user from database using the ID in session */
+/* retrieve user from database using the ID in session */
 passport.deserializeUser(async function (id: string, done) {
   try {
     const [user] = await db
