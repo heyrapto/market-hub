@@ -30,11 +30,30 @@ export const register = async (req: express.Request, res: express.Response) => {
         email: email,
       })
       .returning({
-        firstName: firstName,
-        lastName: lastName,
-        role: role,
-        email: email,
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: users.role,
+        email: users.email,
       });
+    const accessToken = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      env.JWT_ACCESS_SECRET,
+      { expiresIn: "1d" },
+    );
+
+    const refreshToken = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      env.JWT_REFRESH_SECRET,
+      { expiresIn: "15d" },
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+    });
 
     // send register email
     await sendEmail(
@@ -46,7 +65,8 @@ export const register = async (req: express.Request, res: express.Response) => {
     res.status(201).json({
       message: "User Created succesfully",
       success: true,
-      data: newUser,
+      user: newUser,
+      accessToken,
     });
   } catch (error) {
     throw new AppError(`${(error as Error).message}}`, 500);
@@ -169,6 +189,20 @@ export const refreshToken = async (
     }
   } catch (error) {
     throw new AppError(`${(error as Error).message}}`, 500);
+  }
+};
+
+// logout user
+export const logout = async (req: express.Request, res: express.Response) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    res.status(200).json({ message: "Logout successful", success: true });
+  } catch (error) {
+    throw new AppError(`${(error as Error).message}`, 500);
   }
 };
 

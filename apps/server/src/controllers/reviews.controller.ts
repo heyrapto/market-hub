@@ -11,13 +11,13 @@ export const reviewProduct = async (
 ) => {
   try {
     const { rating, content, productId } = req.body;
+    const userId = req.user?.id;
+
     if (!rating || !content) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required field" });
     }
-
-    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -46,7 +46,7 @@ export const getProductReviews = async (
 ) => {
   try {
     const { limit, page } = req.query;
-    const productId = req.params;
+    const { productId } = req.params;
     if (typeof productId !== "string") {
       return res.status(400).json({ error: "Invalid ID format" });
     }

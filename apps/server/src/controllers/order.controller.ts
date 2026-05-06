@@ -153,7 +153,7 @@ export const getOrderStatus = async (
   req: express.Request,
   res: express.Response,
 ) => {
-  const orderId = req.params;
+  const { id: orderId } = req.params;
   try {
     if (typeof orderId !== "string") {
       return res
@@ -189,14 +189,14 @@ export const cancelOrder = async (
   req: express.Request,
   res: express.Response,
 ) => {
-  const orderId = req.params;
+  const { id: orderId } = req.params;
   try {
     if (typeof orderId !== "string") {
       return res
         .status(400)
         .json({ success: false, message: "Please provide a valid order id" });
     }
-    const order = db
+    const order = await db
       .select()
       .from(orders)
       .where(eq(orders.id, orderId))

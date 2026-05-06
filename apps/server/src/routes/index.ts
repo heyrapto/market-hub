@@ -9,7 +9,7 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/product", productRoutes);
-router.use("/review", reviewRoutes);
+router.use("/reviews", reviewRoutes);
 router.use("/order", orderRoutes);
 router.use("/cart", cartRoutes);
 

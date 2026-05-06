@@ -4,6 +4,7 @@ import {
   deleteUser,
   googleCallback,
   login,
+  logout,
   refreshToken,
   register,
 } from "../controllers/auth.controller";
@@ -16,6 +17,9 @@ router.post("/register", register);
 
 // login user
 router.post("/login", login);
+
+// logout user
+router.post("/logout", logout);
 
 // delete user
 router.delete("/delete/:id", authorizeAdmin, deleteUser);

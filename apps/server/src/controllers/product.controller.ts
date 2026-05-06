@@ -39,8 +39,8 @@ export const createProduct = async (
   res: express.Response,
 ) => {
   try {
-    const { title, description, price, stock, sellerId } = req.body;
-    if (!title || !description || !price || !stock) {
+    const { title, description, sku, price, stock, sellerId } = req.body;
+    if (!title || !description || !sku || !price || !stock) {
       return res
         .status(400)
         .json({ message: "Required missing fields", success: false });
@@ -54,6 +54,7 @@ export const createProduct = async (
         sellerId: sellerId,
         title: title,
         description: description,
+        sku: sku,
         price: price,
         imageUrl: imageUrl,
         stock: stock,
@@ -103,7 +104,7 @@ export const updateProduct = async (
 ) => {
   try {
     const { productId } = req.params;
-    const { title, description, price, stock } = req.body;
+    const { title, description, sku, price, stock } = req.body;
     if (typeof productId !== "string") {
       return res.status(400).json({ error: "Invalid ID format" });
     }
@@ -127,6 +128,7 @@ export const updateProduct = async (
       .set({
         title: title,
         description: description,
+        sku: sku,
         price: price,
         imageUrl: imageUrl,
         stock: stock,

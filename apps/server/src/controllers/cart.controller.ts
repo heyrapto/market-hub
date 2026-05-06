@@ -15,13 +15,13 @@ export const addToCart = async (
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    if (!productId || quantity || quantity <= 0) {
+    if (!productId || quantity === undefined || quantity <= 0) {
       return res.status(400).json({
         success: false,
         message: "Please provide a valid productId and quantity",
       });
     }
-    const cartItem = db
+    const result = await db
       .insert(cartItems)
       .values({
         userId: userId,
@@ -29,16 +29,17 @@ export const addToCart = async (
         quantity: quantity,
       })
       .onConflictDoUpdate({
-        target: [cartItems.userId, cartItems.productId], // unique composite key matching your schema index
+        target: [cartItems.userId, cartItems.productId],
         set: {
-          quantity: sql`${cartItems.quantity} + ${quantity}`, // safely increment directly in DB
+          quantity: sql`${cartItems.quantity} + ${quantity}`,
         },
-      });
+      })
+      .returning();
 
     res.status(201).json({
       success: true,
-      messsage: " Item added to cart.",
-      data: cartItem,
+      message: "Item added to cart.",
+      data: result[0],
     });
   } catch (error: any) {
     res

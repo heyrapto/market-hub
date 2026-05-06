@@ -15,6 +15,7 @@ export interface Product {
   id: string;
   title: string;
   description: string;
+  sku: string;
   price: string;
   imageUrl: string | null;
   stock: number;
@@ -45,5 +46,22 @@ export interface RefreshToken {
   userId: string;
   token: string;
   expiresAt: Date;
+  createdAt: Date;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  rating: number;
+  content: string | null;
+  createdAt: Date;
+}
+
+export interface CartItem {
+  id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
   createdAt: Date;
 }
