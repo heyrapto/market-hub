@@ -115,8 +115,9 @@ export const updateProduct = async (
       .limit(1);
     // return err if it doesn't exist
     if (!product) {
-      res.status(404).json({ message: "Product not found", success: false });
-      throw new AppError("Product not found", 404);
+      return res
+        .status(404)
+        .json({ message: "Product not found", success: false });
     }
     // attach image from multer
     const imageUrl: string = `uploads/${req.file?.filename}`;

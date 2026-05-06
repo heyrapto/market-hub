@@ -4,7 +4,7 @@ import { AppError } from "../utils/appError";
 import { db } from "../config/db";
 import { avg, count, eq } from "drizzle-orm";
 
-// rate a product
+// review a product
 export const reviewProduct = async (
   res: express.Response,
   req: express.Request,

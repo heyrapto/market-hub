@@ -3,10 +3,11 @@ import {
   reviewProduct,
   getProductReviews,
 } from "../controllers/reviews.controller";
+import { authMiddleware } from "../middleware/auth.middlware";
 
 const router = Router();
 
-router.post("/", reviewProduct);
+router.post("/", authMiddleware, reviewProduct);
 router.post("/:productId", getProductReviews);
 
 export default router;

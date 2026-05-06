@@ -6,6 +6,7 @@ import {
   integer,
   timestamp,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -63,6 +64,9 @@ export const orders = pgTable("orders", {
   buyerId: uuid("buyer_id")
     .notNull()
     .references(() => users.id),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   status: orderStatusEnum("status").default("pending").notNull(),
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
   paystackPaymentIntentId: text("paystack_payment_intent_id"),
@@ -80,6 +84,29 @@ export const orderItems = pgTable("order_items", {
   quantity: integer("quantity").notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
 });
+
+export const cartItems = pgTable(
+  "cart_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id),
+    quantity: integer("quantity").default(1).notNull(),
+    // expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    // ensures a user can only have one row per product
+    userProductIdx: uniqueIndex("user_product_idx").on(
+      table.userId,
+      table.productId,
+    ),
+  }),
+);
 
 export const refreshTokens = pgTable("refresh_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),

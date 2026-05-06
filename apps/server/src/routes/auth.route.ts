@@ -4,8 +4,10 @@ import {
   deleteUser,
   googleCallback,
   login,
+  refreshToken,
   register,
 } from "../controllers/auth.controller";
+import { authMiddleware, authorizeAdmin } from "../middleware/auth.middlware";
 
 const router = Router();
 
@@ -16,10 +18,10 @@ router.post("/register", register);
 router.post("/login", login);
 
 // delete user
-router.delete("/delete/:id", deleteUser);
+router.delete("/delete/:id", authorizeAdmin, deleteUser);
 
 // refresh token
-router.post("/refresh");
+router.post("/refresh", authMiddleware, refreshToken);
 
 // authenticate with google
 router.get("/google", authWithGoogle);
