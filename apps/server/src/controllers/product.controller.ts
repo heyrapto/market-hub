@@ -4,6 +4,7 @@ import { products } from "../config/db/schema";
 import { db } from "../config/db";
 import { eq } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
+import { deleteCachePattern, getCache, setCache } from "../utils/cache";
 
 // get all products
 export const getAllProducts = async (
@@ -12,6 +13,18 @@ export const getAllProducts = async (
 ) => {
   try {
     const { limit = 10, page = 1 } = req.query;
+    const cacheKey = `products:${page}:${limit}`;
+
+    // try to get from cache
+    const cachedProducts = await getCache(cacheKey);
+    if (cachedProducts) {
+      return res.status(200).json({
+        success: true,
+        message: "Success (from cache)",
+        ...cachedProducts as object,
+      });
+    }
+
     const startIndex = (Number(page) - 1) * Number(limit);
     const total = (await db.select().from(products)).length;
     const allProducts = await db
@@ -20,13 +33,20 @@ export const getAllProducts = async (
       .offset(startIndex)
       .orderBy(products.id);
 
-    res.status(200).json({
-      success: true,
-      message: "Success",
+    const responseData = {
       products: allProducts,
       page,
       limit,
       total,
+    };
+
+    // save to cache
+    await setCache(cacheKey, responseData);
+
+    res.status(200).json({
+      success: true,
+      message: "Success",
+      ...responseData,
     });
   } catch (error) {
     throw new AppError(`${(error as Error).message}}`, 500);
@@ -61,6 +81,9 @@ export const createProduct = async (
       })
       .returning();
 
+    // Invalidate product lists
+    await deleteCachePattern("products:*");
+
     res.status(201).json({
       success: true,
       message: "Product created successfully!",
@@ -81,11 +104,26 @@ export const getProductById = async (
     if (typeof productId !== "string") {
       return res.status(400).json({ error: "Invalid ID format" });
     }
+
+    const cacheKey = `product:${productId}`;
+    const cachedProduct = await getCache(cacheKey);
+    if (cachedProduct) {
+      return res.status(200).json({
+        success: true,
+        message: "Product search complete (from cache).",
+        product: cachedProduct,
+      });
+    }
+
     const result = await db
       .select()
       .from(products)
       .where(eq(products.id, productId))
       .limit(1);
+
+    if (result.length > 0) {
+      await setCache(cacheKey, result);
+    }
 
     res.status(201).json({
       success: true,
@@ -123,7 +161,7 @@ export const updateProduct = async (
     // attach image from multer
     const imageUrl: string = `uploads/${req.file?.filename}`;
     // update and send the updated product
-    const updatedProduct = db
+    const updatedProduct = await db
       .update(products)
       .set({
         title: title,
@@ -135,6 +173,10 @@ export const updateProduct = async (
       })
       .where(eq(products.id, productId))
       .returning();
+
+    // Invalidate caches
+    await deleteCachePattern("products:*");
+    await deleteCachePattern(`product:${productId}`);
 
     res.status(201).json({
       success: true,
@@ -157,6 +199,11 @@ export const deleteProduct = async (
       return res.status(400).json({ error: "Invalid ID format" });
     }
     await db.delete(products).where(eq(products.id, productId));
+
+    // Invalidate caches
+    await deleteCachePattern("products:*");
+    await deleteCachePattern(`product:${productId}`);
+
     res
       .status(201)
       .json({ success: true, message: "Product deleted successfully" });
@@ -190,6 +237,10 @@ export const deleteMultipleProducts = async (
     );
 
     await db.delete(products).where(inArray(products.id, validIds));
+
+    // Invalidate all product caches
+    await deleteCachePattern("products:*");
+    await deleteCachePattern("product:*");
 
     res.json({ success: true, deletedIds: parsedIds });
   } catch (error) {

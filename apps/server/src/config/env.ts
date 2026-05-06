@@ -17,6 +17,7 @@ const envSchema = z.object({
   SMTP_USER: z.string(),
   SMTP_PASS: z.string(),
   SMTP_FROM: z.string(),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
 export const env = envSchema.parse(process.env);
