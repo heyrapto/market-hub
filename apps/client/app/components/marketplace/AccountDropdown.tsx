@@ -33,10 +33,6 @@ export default function AccountDropdown() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 px-3 py-2 rounded-[10px] hover:bg-gray-100 transition-colors text-gray-700 font-medium border border-transparent hover:border-gray-200"
       >
-        {/* Avatar */}
-        <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-          K
-        </div>
         <span className="text-sm font-semibold text-gray-800">Account</span>
         <FiChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
@@ -53,22 +49,6 @@ export default function AccountDropdown() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900 truncate">Keriro User</p>
                   <p className="text-xs text-gray-500 truncate">user@keriro.com</p>
-                </div>
-              </div>
-
-              {/* Stats row */}
-              <div className="mt-4 flex items-center gap-2">
-                <div className="flex-1 bg-white border border-gray-200 rounded-[8px] px-3 py-2 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.03)]">
-                  <p className="text-sm font-extrabold text-gray-900">12</p>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Orders</p>
-                </div>
-                <div className="flex-1 bg-white border border-gray-200 rounded-[8px] px-3 py-2 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.03)]">
-                  <p className="text-sm font-extrabold text-gray-900">5</p>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Wishlist</p>
-                </div>
-                <div className="flex-1 bg-white border border-gray-200 rounded-[8px] px-3 py-2 text-center shadow-[0_1px_2px_0_rgba(0,0,0,0.03)]">
-                  <p className="text-sm font-extrabold text-blue-600">₦0</p>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Balance</p>
                 </div>
               </div>
             </div>
