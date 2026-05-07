@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { AppError } from "../utils/appError";
 import { env } from "../config/env";
-import { TokenPayloadSchema } from "../@types/express";
 import express from "express";
+import { TokenPayloadSchema } from "../@types/express";
 
 export const authMiddleware = async (
   req: express.Request,
