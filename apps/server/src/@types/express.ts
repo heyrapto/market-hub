@@ -18,7 +18,6 @@ declare global {
     interface User extends TokenPayload {}
     interface Request {
       user?: TokenPayload;
-      session: Session & Partial<SessionData>;
     }
   }
 }

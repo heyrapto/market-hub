@@ -9,19 +9,30 @@ export const authMiddleware = async (
   res: express.Response,
   next: express.NextFunction,
 ) => {
-  const token = req.headers.authorization?.split("")[1];
-  if (!token || token.startsWith("Bearer ")) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new AppError("Unauthorized", 401);
   }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    throw new AppError("Unauthorized", 401);
+  }
+
   try {
     const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
     const result = TokenPayloadSchema.safeParse(decoded);
-    req.user = result.data;
 
+    if (!result.success) {
+      res.status(401).json({ message: "Invalid token payload" });
+      throw new AppError("Invalid token payload", 401);
+    }
+
+    req.user = result.data;
     next();
   } catch (error) {
+    if (error instanceof AppError) throw error;
     res.status(403).json({ message: "Expired or invalid" });
-    // if access token is expired, frontend detects that then sends a request to the refresh endpoint for a refresh token
     throw new AppError("Expired or invalid", 403);
   }
 };

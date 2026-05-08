@@ -126,11 +126,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className="absolute top-4 right-4 flex flex-col gap-2">
                   <button
                     onClick={() => setWishlisted(!wishlisted)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center border shadow-sm transition-all ${
-                      wishlisted
+                    className={`w-9 h-9 rounded-full flex items-center justify-center border shadow-sm transition-all ${wishlisted
                         ? "bg-red-50 border-red-200 text-red-500"
                         : "bg-white border-gray-200 text-gray-400 hover:text-red-500"
-                    }`}
+                      }`}
                   >
                     <FiHeart className={`w-4 h-4 ${wishlisted ? "fill-current" : ""}`} />
                   </button>
@@ -147,9 +146,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
-                  className={`flex-1 aspect-square rounded-[14px] overflow-hidden border-2 transition-all ${
-                    activeImage === i ? "border-blue-500" : "border-gray-200/50 hover:border-gray-300"
-                  }`}
+                  className={`flex-1 aspect-square rounded-[14px] overflow-hidden border-2 transition-all ${activeImage === i ? "border-blue-500" : "border-gray-200/50 hover:border-gray-300"
+                    }`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -176,7 +174,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 {/* Rating row */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex items-center gap-1">
-                    {[1,2,3,4,5].map((s) => (
+                    {[1, 2, 3, 4, 5].map((s) => (
                       <FiStar key={s} className={`w-4 h-4 ${s <= Math.round(product.rating) ? "text-amber-400 fill-current" : "text-gray-200"}`} />
                     ))}
                   </div>
@@ -212,11 +210,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       <button
                         key={opt}
                         onClick={() => setSelectedVariants((prev) => ({ ...prev, [v.label]: opt }))}
-                        className={`px-3.5 py-2 rounded-[10px] text-sm font-semibold border transition-all ${
-                          selectedVariants[v.label] === opt
+                        className={`px-3.5 py-2 rounded-[10px] text-sm font-semibold border transition-all ${selectedVariants[v.label] === opt
                             ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                             : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
-                        }`}
+                          }`}
                       >
                         {opt}
                       </button>
@@ -249,11 +246,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex gap-2">
                   <button
                     onClick={handleAddToCart}
-                    className={`flex-1 h-12 rounded-[12px] font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
-                      cartAdded
+                    className={`flex-1 h-12 rounded-[12px] font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${cartAdded
                         ? "bg-green-500 text-white"
                         : "bg-gray-900 hover:bg-gray-800 text-white"
-                    }`}
+                      }`}
                   >
                     {cartAdded ? <><FiCheck className="w-4 h-4" /> Added to Cart!</> : <><FiShoppingCart className="w-4 h-4" /> Add to Cart</>}
                   </button>
@@ -308,7 +304,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* ── Description & Features ── */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gray-100/80 p-1.5 rounded-[24px] border border-gray-200/50 shadow-sm">
-            <div className="bg-white rounded-[18px] p-6">
+            <div className="bg-white rounded-[18px] p-6 h-full">
               <h2 className="font-bold text-lg text-gray-900 mb-3">Product Description</h2>
               <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
             </div>
