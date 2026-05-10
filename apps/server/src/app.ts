@@ -17,7 +17,7 @@ app.use(passport.session());
 app.use(apiLimiter);
 
 const corsOptions = {
-  origin: ["http://localhost:9000"],
+  origin: ["http://localhost:3000"],
   optionsSuccessStatus: 200,
 };
 

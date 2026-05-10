@@ -3,6 +3,8 @@ import { cartItems, orderItems, orders, products } from "../config/db/schema";
 import { AppError } from "../utils/appError";
 import { db } from "../config/db";
 import { eq } from "drizzle-orm";
+import { env } from "../config/env";
+import { paystack } from "../config/paystack";
 
 // place an order
 export const placeOrder = async (
@@ -220,5 +222,51 @@ export const cancelOrder = async (
     });
   } catch (error) {
     throw new AppError("An orror occured", 500);
+  }
+};
+
+// verify payment
+export const verifyPayment = async (
+  req: express.Request,
+  res: express.Response,
+) => {
+  const reference = req.query.reference as string || req.body.reference;
+
+  if (!reference) {
+    return res.status(400).json({ success: false, message: "Transaction reference is required" });
+  }
+
+  try {
+    const { ok, data } = await paystack.verifyPayment(reference);
+
+    if (!ok || !data.status) {
+      throw new AppError(data.message || "Failed to verify payment", 400);
+    }
+
+    if (data.data.status !== "success") {
+      return res.status(400).json({ success: false, message: "Payment was not successful" });
+    }
+
+    // payment successful, update the order
+    const updatedOrder = await db
+      .update(orders)
+      .set({ status: "paid" })
+      .where(eq(orders.paystackPaymentIntentId, reference))
+      .returning();
+
+    if (!updatedOrder || updatedOrder.length === 0) {
+      return res.status(404).json({ success: false, message: "Order not found for this transaction" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment verified successfully",
+      data: updatedOrder[0],
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({ success: false, message: error.message });
+    }
+    res.status(500).json({ success: false, message: error.message || "An error occurred during verification" });
   }
 };

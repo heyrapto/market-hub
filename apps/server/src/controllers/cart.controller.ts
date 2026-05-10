@@ -1,6 +1,9 @@
 import express from "express";
 import { db } from "../config/db";
-import { cartItems, products } from "../config/db/schema";
+import { cartItems, products, orders, orderItems } from "../config/db/schema";
+import { env } from "../config/env";
+import { paystack } from "../config/paystack";
+import { AppError } from "../utils/appError";
 import { and, eq, sql } from "drizzle-orm";
 
 // add to cart
@@ -131,4 +134,98 @@ export const updateCart = async (
 export const checkoutCart = async (
   req: express.Request,
   res: express.Response,
-) => {};
+) => {
+  const userId = req.user?.id;
+  const email = req.user?.email;
+
+  if (!userId || !email) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const userCart = await tx
+        .select({
+          cartItem: cartItems,
+          product: {
+            price: products.price,
+          },
+        })
+        .from(cartItems)
+        .innerJoin(products, eq(cartItems.productId, products.id))
+        .where(eq(cartItems.userId, userId));
+
+      if (userCart.length === 0) {
+        throw new AppError("Cart is empty", 400);
+      }
+
+      const totalAmount = userCart.reduce((sum, item) => {
+        return sum + Number(item.product.price) * item.cartItem.quantity;
+      }, 0);
+
+      // initialize paystack transaction
+      const { ok, data } = await paystack.initializePayment({
+        email,
+        amount: Math.round(totalAmount * 100),
+        ...(env.PAYSTACK_PLAN_CODE && { plan: env.PAYSTACK_PLAN_CODE }),
+        ...(env.PAYSTACK_CALLBACK_URL && { callback_url: env.PAYSTACK_CALLBACK_URL }),
+        metadata: {
+          userId,
+          cartCheckout: true,
+        },
+      });
+
+      if (!ok || !data.status) {
+        throw new AppError(data.message || "Failed to initialize payment", 400);
+      }
+
+      // create the main order record with pending status
+      const [newOrder] = await tx
+        .insert(orders)
+        .values({
+          userId,
+          buyerId: userId,
+          totalAmount: totalAmount.toString(),
+          status: "pending",
+          paystackPaymentIntentId: data.data.reference,
+        })
+        .returning({ id: orders.id });
+
+      const itemsToInsert = userCart.map((item) => ({
+        orderId: newOrder.id,
+        productId: item.cartItem.productId,
+        quantity: item.cartItem.quantity,
+        price: item.product.price,
+      }));
+
+      await tx.insert(orderItems).values(itemsToInsert);
+
+      // clear the cart
+      await tx.delete(cartItems).where(eq(cartItems.userId, userId));
+
+      return {
+        orderId: newOrder.id,
+        authorizationUrl: data.data.authorization_url,
+        reference: data.data.reference,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Checkout initialized successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      return res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+    }
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: error.message || "Failed to process checkout",
+      });
+  }
+};
