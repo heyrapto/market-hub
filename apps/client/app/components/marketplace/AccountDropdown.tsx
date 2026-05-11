@@ -3,14 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FiUser, FiChevronDown, FiPackage, FiHeart, FiSettings,
-  FiLogOut, FiShield, FiChevronRight
+  FiLogOut, FiShield, FiChevronRight, FiBriefcase
 } from "react-icons/fi";
+import Link from "next/link";
 
 const MENU_ITEMS = [
-  { icon: FiPackage, label: "My Orders", badge: "3" },
-  { icon: FiHeart, label: "Wishlist", badge: null },
-  { icon: FiShield, label: "Saved Addresses", badge: null },
-  { icon: FiSettings, label: "Account Settings", badge: null },
+  { icon: FiPackage, label: "My Orders", badge: "3", href: "/orders" },
+  { icon: FiHeart, label: "Wishlist", badge: null, href: null },
+  { icon: FiBriefcase, label: "Seller Dashboard", badge: "New", href: "/dashboard" },
+  { icon: FiSettings, label: "Account Settings", badge: null, href: null },
 ];
 
 export default function AccountDropdown() {
@@ -55,22 +56,27 @@ export default function AccountDropdown() {
 
             {/* Menu Items */}
             <div className="py-1">
-              {MENU_ITEMS.map(({ icon: Icon, label, badge }) => (
-                <button
-                  key={label}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] hover:bg-[#f9f9f9] transition-colors group"
-                >
-                  <div className="w-8 h-8 rounded-[8px] bg-gray-100 group-hover:bg-white border border-transparent group-hover:border-gray-200 flex items-center justify-center transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.03)]">
-                    <Icon className="w-4 h-4 text-gray-500 group-hover:text-gray-800" />
-                  </div>
-                  <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900 text-left">{label}</span>
-                  {badge ? (
-                    <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{badge}</span>
-                  ) : (
-                    <FiChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                  )}
-                </button>
-              ))}
+              {MENU_ITEMS.map(({ icon: Icon, label, badge, href }) => {
+                const Component = href ? Link : "button";
+                return (
+                  <Component
+                    key={label}
+                    href={href as any}
+                    onClick={() => setOpen(false)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] hover:bg-[#f9f9f9] transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-[8px] bg-gray-100 group-hover:bg-white border border-transparent group-hover:border-gray-200 flex items-center justify-center transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.03)]">
+                      <Icon className="w-4 h-4 text-gray-500 group-hover:text-gray-800" />
+                    </div>
+                    <span className="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900 text-left">{label}</span>
+                    {badge ? (
+                      <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{badge}</span>
+                    ) : (
+                      <FiChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                    )}
+                  </Component>
+                );
+              })}
             </div>
 
             {/* Footer */}

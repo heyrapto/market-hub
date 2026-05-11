@@ -76,32 +76,41 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-[#f5f5f5] font-sans">
 
-      {/* ── Header ── */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="w-full px-4 md:px-8 lg:px-12 h-16 flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium group transition-colors">
-            <FiArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back
-          </Link>
-          {/* Breadcrumb */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <FiChevronRight className="w-3 h-3" />
-            <span className="hover:text-blue-600 cursor-pointer transition-colors">{product.category}</span>
-            <FiChevronRight className="w-3 h-3" />
-            <span className="text-gray-700 font-medium line-clamp-1">{product.title}</span>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full bg-[#f5f5f5]/80 backdrop-blur-md border-b border-gray-200/60">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2 shrink-0">
               <div className="w-5 h-5 rounded-full border-[3px] border-blue-600" />
               <span className="text-xl font-bold text-gray-900 font-serif">Keriro</span>
             </Link>
-            <Link href="/cart" className="relative ml-2 flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] text-sm font-semibold transition-colors">
-              <FiShoppingCart className="w-4 h-4" />
+
+            {/* Breadcrumb - hidden on tiny screens */}
+            <div className="hidden lg:flex items-center gap-1.5 text-xs text-gray-400">
+              <FiChevronRight className="w-3 h-3" />
+              <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+              <FiChevronRight className="w-3 h-3" />
+              <span className="hover:text-blue-600 cursor-pointer transition-colors">{product.category}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link href="/cart" className="relative flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] text-xs font-bold transition-colors shadow-sm">
+              <FiShoppingCart className="w-3.5 h-3.5" />
               Cart
               <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">2</span>
             </Link>
+            <div className="w-px h-4 bg-gray-200" />
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-semibold group"
+            >
+              <FiArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              Back
+            </Link>
           </div>
+
         </div>
       </header>
 

@@ -5,22 +5,26 @@ import {
   FiInfo, FiChevronDown, FiShoppingBag, FiXCircle,
   FiMapPin, FiChevronRight, FiMessageCircle
 } from "react-icons/fi";
+import Link from "next/link";
 
 const HELP_ITEMS = [
   {
     icon: FiShoppingBag,
     label: "Place an Order",
     desc: "Learn how to buy on Keriro",
+    href: "/cart",
   },
   {
     icon: FiMapPin,
     label: "Track an Order",
     desc: "Check your delivery status",
+    href: "/orders",
   },
   {
     icon: FiXCircle,
     label: "Cancel an Order",
     desc: "Request a cancellation",
+    href: "/orders",
   },
 ];
 
@@ -62,22 +66,26 @@ export default function HelpDropdown() {
 
             {/* Menu items */}
             <div className="py-1">
-              {HELP_ITEMS.map(({ icon: Icon, label, desc }) => (
-                <button
-                  key={label}
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] hover:bg-[#f9f9f9] transition-colors group"
-                >
-                  <div className="w-8 h-8 rounded-[8px] bg-gray-100 group-hover:bg-white border border-transparent group-hover:border-gray-200 flex items-center justify-center transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] shrink-0">
-                    <Icon className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
-                  </div>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 group-hover:text-gray-900">{label}</p>
-                    <p className="text-[11px] text-gray-400 truncate">{desc}</p>
-                  </div>
-                  <FiChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
-                </button>
-              ))}
+              {HELP_ITEMS.map(({ icon: Icon, label, desc, href }) => {
+                const Component = href ? Link : "button";
+                return (
+                  <Component
+                    key={label}
+                    href={href as any}
+                    onClick={() => setOpen(false)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[10px] hover:bg-[#f9f9f9] transition-colors group"
+                  >
+                    <div className="w-8 h-8 rounded-[8px] bg-gray-100 group-hover:bg-white border border-transparent group-hover:border-gray-200 flex items-center justify-center transition-all shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] shrink-0">
+                      <Icon className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 group-hover:text-gray-900">{label}</p>
+                      <p className="text-[11px] text-gray-400 truncate">{desc}</p>
+                    </div>
+                    <FiChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
+                  </Component>
+                );
+              })}
             </div>
 
             {/* Footer — live chat CTA */}

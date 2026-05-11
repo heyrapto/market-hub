@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Mono, Instrument_Serif } from "next/font/google";
+import { DM_Mono, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
@@ -25,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={cn("h-full", "font-mono", jetbrainsMono.variable)}>
       <body
         className={`${instrumentSerif.variable} ${dmMono.variable} antialiased h-full`}
       >

@@ -5,12 +5,15 @@ import Link from "next/link";
 import {
   FiFilter, FiGrid, FiList, FiMenu,
   FiShoppingCart, FiArrowUpRight,
-  FiShield, FiZap
+  FiShield, FiZap,
+  FiChevronRight,
+  FiArrowLeft
 } from "react-icons/fi";
 import { MotionHighlight, MotionHighlightItem } from "@/app/components/ui/motion-highlight";
 import SearchOverlay from "@/app/components/marketplace/SearchOverlay";
 import AccountDropdown from "@/app/components/marketplace/AccountDropdown";
 import HelpDropdown from "@/app/components/marketplace/HelpDropdown";
+import BorderedPagination from "@/app/components/shadcn-studio/pagination/pagination";
 
 const DUMMY_PRODUCTS = [
   {
@@ -257,6 +260,11 @@ export default function Marketplace() {
                   )}
                 </Link>
               ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-12 flex items-center justify-center">
+              <BorderedPagination />
             </div>
           </div>
         </div>
