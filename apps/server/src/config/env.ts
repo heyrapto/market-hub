@@ -21,6 +21,7 @@ const envSchema = z.object({
   PAYSTACK_SECRET_KEY: z.string().min(1),
   PAYSTACK_PLAN_CODE: z.string().optional(),
   PAYSTACK_CALLBACK_URL: z.string().optional(),
+  SESSION_SECRET: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

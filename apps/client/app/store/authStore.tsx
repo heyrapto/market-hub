@@ -9,13 +9,20 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+
   login: (credentials: any) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
+
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   clearError: () => void;
+
+  googleLogin: () => void;
+  handleGoogleCallback: () => void;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const useAuthStore = create<AuthState>()(
   subscribeWithSelector(
@@ -27,40 +34,75 @@ export const useAuthStore = create<AuthState>()(
         loading: false,
         error: null,
 
+        googleLogin: () => {
+          window.location.href = `${API_URL}/auth/google`;
+        },
+
+        handleGoogleCallback: () => {
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get("token");
+
+          if (!token) return;
+
+          set({
+            token,
+            isAuthenticated: true,
+            loading: false,
+            error: null,
+          });
+
+          // clean URL so token disappears
+          window.history.replaceState({}, document.title, "/");
+        },
+
         login: async (credentials) => {
           set({ loading: true, error: null });
+
           try {
             const response = await authApi.login(credentials);
-            const { user, accessToken: token } = response;
+            const { user, accessToken } = response;
+
             set({
               user,
-              token,
+              token: accessToken,
               isAuthenticated: true,
               loading: false,
             });
-            localStorage.setItem("auth_token", token);
           } catch (error: any) {
-            const message = error.response?.data?.message || "Login failed";
-            set({ error: message, loading: false });
+            const message =
+              error.response?.data?.message || "Login failed";
+
+            set({
+              error: message,
+              loading: false,
+            });
+
             throw error;
           }
         },
 
         register: async (data) => {
           set({ loading: true, error: null });
+
           try {
             const response = await authApi.register(data);
-            const { user, accessToken: token } = response;
+            const { user, accessToken } = response;
+
             set({
               user,
-              token,
+              token: accessToken,
               isAuthenticated: true,
               loading: false,
             });
-            localStorage.setItem("auth_token", token);
           } catch (error: any) {
-            const message = error.response?.data?.message || "Registration failed";
-            set({ error: message, loading: false });
+            const message =
+              error.response?.data?.message || "Registration failed";
+
+            set({
+              error: message,
+              loading: false,
+            });
+
             throw error;
           }
         },
@@ -75,17 +117,25 @@ export const useAuthStore = create<AuthState>()(
               user: null,
               token: null,
               isAuthenticated: false,
+              loading: false,
+              error: null,
             });
-            localStorage.removeItem("auth_token");
           }
         },
 
-        setUser: (user) => set({ user, isAuthenticated: !!user }),
+        setUser: (user) =>
+          set({
+            user,
+            isAuthenticated: !!user,
+          }),
+
         setToken: (token) => set({ token }),
+
         clearError: () => set({ error: null }),
       }),
       {
         name: "auth-storage",
+
         partialize: (state) => ({
           user: state.user,
           token: state.token,

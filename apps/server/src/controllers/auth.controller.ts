@@ -10,12 +10,12 @@ import { env } from "../config/env";
 import { sendEmail } from "../services/email.service";
 import { sendLoginEmail } from "../templates/welcome.template";
 
-// register user
 export const register = async (req: express.Request, res: express.Response) => {
   const { firstName, lastName, email, password, role } = req.body;
+
   try {
     if (!firstName || !lastName || !password || !email) {
-      res.status(400).json({ message: "Required missing field" });
+      return res.status(400).json({ message: "Required missing field" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -23,11 +23,11 @@ export const register = async (req: express.Request, res: express.Response) => {
     const [newUser] = await db
       .insert(users)
       .values({
-        firstName: firstName,
-        lastName: lastName,
-        role: role,
+        firstName,
+        lastName,
+        role,
         password: hashedPassword,
-        email: email,
+        email,
       })
       .returning({
         id: users.id,
@@ -36,16 +36,17 @@ export const register = async (req: express.Request, res: express.Response) => {
         role: users.role,
         email: users.email,
       });
+
     const accessToken = jwt.sign(
       { id: newUser.id, email: newUser.email, role: newUser.role },
       env.JWT_ACCESS_SECRET,
-      { expiresIn: "1d" },
+      { expiresIn: "1d" }
     );
 
     const refreshToken = jwt.sign(
-      { id: newUser.id, email: newUser.email, role: newUser.role },
+      { id: newUser.id },
       env.JWT_REFRESH_SECRET,
-      { expiresIn: "15d" },
+      { expiresIn: "15d" }
     );
 
     res.cookie("refreshToken", refreshToken, {
@@ -55,30 +56,34 @@ export const register = async (req: express.Request, res: express.Response) => {
       maxAge: 15 * 24 * 60 * 60 * 1000,
     });
 
-    // send register email
     await sendEmail(
       newUser.email,
       "Signup Successful",
-      sendLoginEmail(newUser),
+      sendLoginEmail(newUser)
     );
 
-    res.status(201).json({
-      message: "User Created succesfully",
+    return res.status(201).json({
       success: true,
+      message: "User created successfully",
       user: newUser,
       accessToken,
     });
   } catch (error) {
-    throw new AppError(`${(error as Error).message}}`, 500);
+    console.error("Register Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
-// login user
 export const login = async (req: express.Request, res: express.Response) => {
   const { email, password } = req.body;
+
   try {
     if (!email || !password) {
-      res.status(400).json({ message: "Required missing field" });
+      return res.status(400).json({ message: "Required missing field" });
     }
 
     const [user] = await db
@@ -88,76 +93,61 @@ export const login = async (req: express.Request, res: express.Response) => {
       .limit(1);
 
     if (!user) {
-      res.status(404).json({ message: "User not found", success: false });
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
     }
 
-    const isMatch = bcrypt.compare(password, user.password as string);
+    const isMatch = await bcrypt.compare(password, user.password as string);
+
     if (!isMatch) {
-      res
-        .status(400)
-        .json({ message: "Password is incorrect", success: false });
+      return res.status(400).json({
+        message: "Password is incorrect",
+        success: false,
+      });
     }
 
     const accessToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       env.JWT_ACCESS_SECRET,
-      { expiresIn: "1d" },
+      { expiresIn: "1d" }
     );
 
     const refreshToken = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id },
       env.JWT_REFRESH_SECRET,
-      { expiresIn: "1d" },
+      { expiresIn: "15d" }
     );
 
-    if (user) {
-      const { password, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
-      });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+    });
 
-      try {
-      } catch (error) {
-        throw new AppError(
-          `Failed to send welcome email: ${(error as Error).message}}`,
-          500,
-        );
-      }
+    await sendEmail(
+      user.email,
+      "Login Successful",
+      sendLoginEmail(user)
+    );
 
-      // send login email
-      await sendEmail(user.email, "Login Successful", sendLoginEmail(user));
-
-      res.status(200).json({
-        message: "Login Succesfull",
-        success: true,
-        user: userWithoutPassword,
-        accessToken,
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: userWithoutPassword,
+      accessToken,
+    });
   } catch (error) {
-    throw new AppError(`${(error as Error).message}}`, 500);
-  }
-};
+    console.error("Login Error:", error);
 
-// delete user
-export const deleteUser = async (
-  req: express.Request,
-  res: express.Response,
-) => {
-  const { id } = req.params;
-  try {
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "Invalid user ID" });
-    }
-    await db.delete(users).where(eq(users.id, id));
-
-    res.status(200).json({ message: `User deleted succesfully` });
-  } catch (error) {
-    throw new AppError(`${(error as Error).message}}`, 500);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
@@ -192,7 +182,42 @@ export const refreshToken = async (
   }
 };
 
-// logout user
+
+export const authWithGoogle = passport.authenticate("google", {
+  scope: ["email", "profile"],
+});
+
+
+export const googleCallback = [
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/login",
+    session: false,
+  }),
+
+  (req: express.Request, res: express.Response) => {
+    const user = req.user as any;
+
+    if (!user) {
+      return res.redirect("http://localhost:3000/login");
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      env.JWT_ACCESS_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    return res.redirect(
+      `http://localhost:3000?token=${token}`
+    );
+  },
+];
+
+
 export const logout = async (req: express.Request, res: express.Response) => {
   try {
     res.clearCookie("refreshToken", {
@@ -200,26 +225,31 @@ export const logout = async (req: express.Request, res: express.Response) => {
       secure: true,
       sameSite: "strict",
     });
-    res.status(200).json({ message: "Logout successful", success: true });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
   } catch (error) {
-    throw new AppError(`${(error as Error).message}`, 500);
+    throw new AppError((error as Error).message, 500);
   }
 };
 
-// google auth
-export const authWithGoogle = async () => {
-  passport.authenticate("google", {
-    scope: ["https://www.googleapis.com/auth/plus.login", "email"],
-  });
-};
 
-// callback route (think of it like a return address on an envelope: you send a request to a service, and you provide the callback route so the service knows exactly where to send the response or the user once it's done.)
-export const googleCallback = async () => {
-  (passport.authenticate("google", { failureRedirect: "/login" }),
-    function (req: express.Request, res: express.Response) {
-      console.log(req.user);
-      req.session.save(() => {
-        res.redirect("/");
-      });
+export const deleteUser = async (req: express.Request, res: express.Response) => {
+  const { id } = req.params;
+
+  try {
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    await db.delete(users).where(eq(users.id, id));
+
+    return res.status(200).json({
+      message: "User deleted successfully",
     });
+  } catch (error) {
+    throw new AppError((error as Error).message, 500);
+  }
 };

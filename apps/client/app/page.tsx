@@ -7,36 +7,29 @@ import Marketplace from "@/app/components/marketplace/Marketplace";
 const HERO_SEEN_KEY = "keriro_hero_seen";
 
 export default function Home() {
-  // null = loading (avoid flash), true = show marketplace, false = show hero
   const [showMarketplace, setShowMarketplace] = useState<boolean | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // On every mount check localStorage — if user has visited before, go straight to marketplace
     const alreadySeen = localStorage.getItem(HERO_SEEN_KEY) === "true";
     setShowMarketplace(alreadySeen);
   }, []);
 
   const handleExplore = () => {
-    // Mark as seen and trigger slide-up animation before switching
     localStorage.setItem(HERO_SEEN_KEY, "true");
     setIsAnimating(true);
     setTimeout(() => setShowMarketplace(true), 1100);
   };
 
-  // Avoid flash of wrong content while localStorage is read
   if (showMarketplace === null) return null;
 
-  // Once seen, render the marketplace directly (no hero wrapper overhead)
   if (showMarketplace) return <Marketplace />;
 
-  // ── Hero (first visit only) ─────────────────────────────────────────────
   return (
     <main
       className={`relative w-full min-h-screen overflow-hidden flex flex-col items-center bg-cover bg-center bg-no-repeat transition-transform duration-[1100ms] ease-[cubic-bezier(0.65,0,0.05,1)] ${isAnimating ? "-translate-y-full" : "translate-y-0"}`}
       style={{ backgroundImage: "url('/images/hero-bg.png')", backgroundColor: "#dbeafe" }}
     >
-      {/* Navbar */}
       <nav className="w-full flex items-center justify-between px-6 py-6 md:px-10 lg:px-16">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full border-[4px] border-[#3b82f6]" />

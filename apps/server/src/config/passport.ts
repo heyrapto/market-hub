@@ -12,35 +12,33 @@ passport.use(
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       callbackURL: env.CALLBACK_URL,
     },
-    async function (
-      accessToken: any,
-      refreshToken: any,
-      profile: any,
-      done: any,
-    ) {
+    async function (accessToken, refreshToken, profile, done) {
       try {
         const [user] = await db
           .insert(users)
           .values({
             googleId: profile.id,
-            firstName: profile.name.givenName,
-            lastName: profile.name.familyName,
-            email: profile.emails[0].value,
+            firstName: profile.name?.givenName ?? "",
+            lastName: profile.name?.familyName ?? "",
+            email: profile.emails?.[0]?.value ?? "",
+            role: "buyer",
+            password: null,
           })
           .onConflictDoUpdate({
             target: users.googleId,
             set: {
-              firstName: profile.name.givenName,
-              lastName: profile.name.familyName,
+              firstName: profile.name?.givenName ?? "",
+              lastName: profile.name?.familyName ?? "",
+              email: profile.emails?.[0]?.value ?? "",
             },
           })
           .returning();
 
         return done(null, user);
       } catch (err) {
-        return done(err, null);
+        return done(null, false);
       }
-    },
+    }
   ),
 );
 
@@ -63,5 +61,3 @@ passport.deserializeUser(async function (id: string, done) {
     done(err, null);
   }
 });
-
-export default passport;

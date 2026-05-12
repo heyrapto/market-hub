@@ -26,8 +26,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   role: roleEnum("role").default("buyer").notNull(),
   password: text("password"),
-  paystackAccountId: text("stripe_account_id"),
-  googleId: text("google_id"),
+  paystackAccountId: text("paystack_account_id"),
+  googleId: text("google_id").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

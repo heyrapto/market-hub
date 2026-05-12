@@ -4,7 +4,12 @@ import { motion } from "motion/react";
 
 export default function PageLoader() {
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#fdfaf5]">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#fbf9f4]"
+    >
       <div className="relative w-12 h-12">
         {[...Array(8)].map((_, i) => (
           <motion.div
@@ -26,6 +31,6 @@ export default function PageLoader() {
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,13 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiMail, FiLock, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 import { MotionHighlight, MotionHighlightItem } from "@/app/components/ui/motion-highlight";
+import { useAuthStore } from "@/app/store/authStore";
 
 export default function AuthPage() {
+  const router = useRouter();
+  const { login, register, googleLogin, loading, error, clearError } = useAuthStore();
+
   const [activeTab, setActiveTab] = useState("Login");
   const [showPassword, setShowPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: ""
+  });
+
+  useEffect(() => {
+    useAuthStore.getState().handleGoogleCallback();
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) clearError();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (activeTab === "Login") {
+        await login({ email: formData.email, password: formData.password });
+      } else {
+        await register(formData);
+      }
+      router.push("/");
+    } catch (err) {
+      console.error("Auth error:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#f5f5f5] font-sans flex flex-col">
@@ -15,14 +50,10 @@ export default function AuthPage() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 w-full bg-[#f5f5f5]/80 backdrop-blur-md border-b border-gray-200/60">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-
-          {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full border-[3px] border-blue-600" />
             <span className="text-xl font-bold text-gray-900 font-serif">Keriro</span>
           </Link>
-
-          {/* Right: Back */}
           <Link
             href="/"
             className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-semibold group"
@@ -30,14 +61,12 @@ export default function AuthPage() {
             <FiArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             Back
           </Link>
-
         </div>
       </header>
 
       {/* ── Page body ── */}
       <div className="flex-1 w-full flex flex-col items-center justify-center p-4">
 
-        {/* Main Auth Card */}
         <div className="w-full max-w-[440px] bg-gray-100/80 p-1.5 rounded-[26px] border border-gray-200/50 shadow-[0_24px_80px_-12px_rgba(0,0,0,0.1)]">
           <div className="bg-white rounded-[20px] p-6 sm:p-8 flex flex-col">
 
@@ -56,7 +85,12 @@ export default function AuthPage() {
                 mode="parent"
                 controlledItems={true}
                 value={activeTab}
-                onValueChange={(val) => val && setActiveTab(val)}
+                onValueChange={(val) => {
+                  if (val) {
+                    setActiveTab(val);
+                    clearError();
+                  }
+                }}
                 className="bg-white rounded-xl shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border border-gray-100"
                 containerClassName="flex items-center gap-1 w-full"
               >
@@ -74,20 +108,49 @@ export default function AuthPage() {
               </MotionHighlight>
             </div>
 
+            {error && (
+              <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold text-center">
+                {error}
+              </div>
+            )}
+
             {/* Form */}
-            <form className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {activeTab === "Register" && (
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1.5 ml-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="John Doe"
-                      className="w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-[14px] text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition-all font-medium text-gray-900 placeholder-gray-400"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1.5 ml-1">
+                      First Name
+                    </label>
+                    <div className="relative">
+                      <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        name="firstName"
+                        type="text"
+                        required
+                        placeholder="John"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-[14px] text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition-all font-medium text-gray-900 placeholder-gray-400"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1.5 ml-1">
+                      Last Name
+                    </label>
+                    <div className="relative">
+                      <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        name="lastName"
+                        type="text"
+                        required
+                        placeholder="Doe"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-[14px] text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition-all font-medium text-gray-900 placeholder-gray-400"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -99,8 +162,12 @@ export default function AuthPage() {
                 <div className="relative">
                   <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    name="email"
                     type="email"
+                    required
                     placeholder="name@example.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="w-full h-12 pl-11 pr-4 bg-gray-50 border border-gray-200 rounded-[14px] text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition-all font-medium text-gray-900 placeholder-gray-400"
                   />
                 </div>
@@ -115,8 +182,12 @@ export default function AuthPage() {
                 <div className="relative">
                   <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    required
                     placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     className="w-full h-12 pl-11 pr-11 bg-gray-50 border border-gray-200 rounded-[14px] text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition-all font-medium text-gray-900 placeholder-gray-400"
                   />
                   <button
@@ -130,14 +201,14 @@ export default function AuthPage() {
               </div>
 
               <button
-                type="button"
-                className="w-full h-12 mt-2 rounded-[14px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-sm shadow-blue-600/20 active:scale-[0.98]"
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 mt-2 rounded-[14px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-sm shadow-blue-600/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {activeTab === "Login" ? "Sign In" : "Create Account"}
+                {loading ? "Please wait..." : (activeTab === "Login" ? "Sign In" : "Create Account")}
               </button>
             </form>
 
-            {/* Divider */}
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-gray-100"></div>
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Or continue with</span>
@@ -147,6 +218,7 @@ export default function AuthPage() {
             {/* Google SSO */}
             <button
               type="button"
+              onClick={googleLogin}
               className="w-full h-12 rounded-[14px] bg-white hover:bg-gray-50 text-gray-700 font-bold text-sm transition-all border border-gray-200 shadow-[0_1px_2px_0_rgba(0,0,0,0.03)] flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -162,7 +234,6 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Footer text */}
         <p className="mt-8 text-xs text-gray-400 font-medium text-center max-w-[300px]">
           By proceeding, you agree to Keriro's <Link href="#" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">Terms of Service</Link> and <Link href="#" className="text-gray-600 hover:text-gray-900 underline underline-offset-2">Privacy Policy</Link>.
         </p>

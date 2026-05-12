@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Mono, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import LoadingWrapper from "@/app/components/ui/LoadingWrapper";
 
 const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
 
@@ -33,7 +34,9 @@ export default function RootLayout({
         className={`${instrumentSerif.variable} ${dmMono.variable} antialiased h-full`}
       >
         <div className="relative z-20 min-h-full">
-          {children}
+          <LoadingWrapper>
+            {children}
+          </LoadingWrapper>
         </div>
       </body>
     </html>
